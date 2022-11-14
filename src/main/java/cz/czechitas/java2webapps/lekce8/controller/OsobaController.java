@@ -1,5 +1,6 @@
 package cz.czechitas.java2webapps.lekce8.controller;
 
+import cz.czechitas.java2webapps.lekce8.OsobaRepository;
 import cz.czechitas.java2webapps.lekce8.entity.Osoba;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,12 @@ import java.util.List;
 @Controller
 public class OsobaController {
 
+  private final OsobaRepository osobaRepository;
+
+  public OsobaController(OsobaRepository osobaRepository) {
+    this.osobaRepository = osobaRepository;
+  }
+
   private final List<Osoba> seznamOsob = List.of(
           new Osoba(1L, "Božena", "Němcová", LocalDate.of(1820, 2, 4), "Vídeň", null, null)
   );
@@ -33,7 +40,7 @@ public class OsobaController {
   public Object seznam() {
     //TODO načíst seznam osob
     return new ModelAndView("seznam")
-            .addObject("osoby", seznamOsob);
+            .addObject("osoby", osobaRepository.findAll());
   }
 
   @GetMapping("/novy")
@@ -48,6 +55,7 @@ public class OsobaController {
       return "detail";
     }
     //TODO uložit údaj o nové osobě
+    osobaRepository.save(osoba);
     return "redirect:/";
   }
 
@@ -55,7 +63,7 @@ public class OsobaController {
   public Object detail(@PathVariable long id) {
     //TODO načíst údaj o osobě
     return new ModelAndView("detail")
-            .addObject("osoba", seznamOsob.get(0));
+            .addObject("osoba", osobaRepository.findById(id).get());
   }
 
   @PostMapping("/{id:[0-9]+}")
@@ -64,12 +72,14 @@ public class OsobaController {
       return "detail";
     }
     //TODO uložit údaj o osobě
+    osobaRepository.save(osoba);
     return "redirect:/";
   }
 
   @PostMapping(value = "/{id:[0-9]+}", params = "akce=smazat")
   public Object smazat(@PathVariable long id) {
     //TODO smazat údaj o osobě
+    osobaRepository.deleteById(id);
     return "redirect:/";
   }
 
